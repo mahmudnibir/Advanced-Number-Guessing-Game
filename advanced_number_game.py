@@ -50,7 +50,8 @@ class NumberGuessGame(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Number Guess Game")
-        self.geometry("400x300")
+        self.geometry("400x400")
+        self.configure(bg="#333333")  # Reverting to the previous dark gray background
         
         self.difficulty = tk.StringVar(value="easy")
         self.player_guesses = 0
@@ -64,18 +65,25 @@ class NumberGuessGame(tk.Tk):
         self.setup_ui()
     
     def setup_ui(self):
-        tk.Label(self, text="Welcome to Number Guess Game!", font=("Arial", 14)).pack(pady=10)
+        title = tk.Label(self, text="Welcome to Number Guess Game!", font=("Arial", 16, "bold"), fg="#FFCC00", bg="#333333")
+        title.pack(pady=10)
         
-        tk.Label(self, text="Enter your name:").pack()
-        tk.Entry(self, textvariable=self.player_name).pack(pady=5)
+        name_label = tk.Label(self, text="Enter your name:", fg="#FFFFFF", bg="#333333")
+        name_label.pack()
+        name_entry = tk.Entry(self, textvariable=self.player_name)
+        name_entry.pack(pady=5)
         
-        tk.Label(self, text="Select difficulty:").pack()
+        difficulty_label = tk.Label(self, text="Select difficulty:", fg="#FFFFFF", bg="#333333")
+        difficulty_label.pack()
         tk.OptionMenu(self, self.difficulty, "easy", "medium", "hard").pack(pady=5)
         
-        tk.Button(self, text="Start Game", command=self.start_game).pack(pady=10)
-        tk.Button(self, text="View Leaderboard", command=self.show_leaderboard).pack(pady=10)
+        start_button = tk.Button(self, text="Start Game", command=self.start_game, bg="#00A8E8", fg="white", font=("Arial", 12, "bold"))
+        start_button.pack(pady=10)
         
-        self.result_label = tk.Label(self, text="")
+        leaderboard_button = tk.Button(self, text="View Leaderboard", command=self.show_leaderboard, bg="#00A8E8", fg="white", font=("Arial", 12, "bold"))
+        leaderboard_button.pack(pady=10)
+        
+        self.result_label = tk.Label(self, text="", fg="#FF5733", bg="#333333", font=("Arial", 12, "bold"))
         self.result_label.pack(pady=10)
     
     def start_game(self):
@@ -88,14 +96,17 @@ class NumberGuessGame(tk.Tk):
         
         self.ai = AI(min_number, max_number)
         
-        self.guess_label = tk.Label(self, text=f"Guess the number between {min_number} and {max_number}")
+        self.guess_label = tk.Label(self, text=f"Guess the number between {min_number} and {max_number}", fg="#FFFFFF", bg="#333333", font=("Arial", 12))
         self.guess_label.pack(pady=5)
+        
+        self.attempts_left_label = tk.Label(self, text=f"Attempts left: {self.max_attempts - self.player_guesses}", fg="#FFFF66", bg="#333333", font=("Arial", 12, "bold"))
+        self.attempts_left_label.pack(pady=5)
         
         self.guess_entry = tk.Entry(self)
         self.guess_entry.pack(pady=5)
         self.guess_entry.bind("<Return>", self.check_guess)
         
-        self.ai_guess_label = tk.Label(self, text="AI is making guesses...")
+        self.ai_guess_label = tk.Label(self, text="AI is making guesses...", fg="#FFFFFF", bg="#333333", font=("Arial", 12))
         self.ai_guess_label.pack(pady=5)
     
     def get_game_parameters(self):
@@ -108,7 +119,17 @@ class NumberGuessGame(tk.Tk):
             return 1, 200, 5
     
     def check_guess(self, event=None):
-        player_guess = int(self.guess_entry.get())
+        try:
+            player_guess = int(self.guess_entry.get())
+        except ValueError:
+            self.result_label.config(text="Please enter a valid number.")
+            return
+        
+        min_number, max_number, _ = self.get_game_parameters()
+        if not (min_number <= player_guess <= max_number):
+            self.result_label.config(text=f"Guess out of range! Enter a number between {min_number} and {max_number}.")
+            return
+        
         self.guess_entry.delete(0, tk.END)
         self.player_guesses += 1
         
@@ -122,6 +143,8 @@ class NumberGuessGame(tk.Tk):
             self.result_label.config(text=f"Congratulations! You guessed it in {self.player_guesses} attempts!")
             self.end_game(elapsed_time, points)
             return
+        
+        self.attempts_left_label.config(text=f"Attempts left: {self.max_attempts - self.player_guesses}")
         
         if self.player_guesses >= self.max_attempts:
             self.result_label.config(text="Game Over! You've reached the maximum attempts.")
@@ -160,11 +183,12 @@ class NumberGuessGame(tk.Tk):
         leaderboard_window = tk.Toplevel(self)
         leaderboard_window.title("Leaderboard")
         leaderboard_window.geometry("300x200")
+        leaderboard_window.configure(bg="#333333")
         
-        tk.Label(leaderboard_window, text="Leaderboard", font=("Arial", 14)).pack(pady=10)
+        tk.Label(leaderboard_window, text="Leaderboard", font=("Arial", 14), fg="#FFCC00", bg="#333333").pack(pady=10)
         
         for idx, score in enumerate(scores[:10]):
-            tk.Label(leaderboard_window, text=f"{idx + 1}. {score[0]} - {score[1]} guesses in {score[2]}s with {score[3]} points").pack()
+            tk.Label(leaderboard_window, text=f"{idx + 1}. {score[0]} - {score[1]} guesses in {score[2]}s with {score[3]} points", fg="#FFFFFF", bg="#333333").pack()
 
 if __name__ == "__main__":
     app = NumberGuessGame()
